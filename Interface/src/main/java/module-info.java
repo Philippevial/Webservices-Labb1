@@ -1,2 +1,3 @@
-module Interface {
+module org.example.pizzaservice {
+    exports org.example.pizzaservice;
 }
