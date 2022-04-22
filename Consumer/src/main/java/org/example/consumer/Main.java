@@ -18,15 +18,14 @@ public class Main {
     }
 
     private void runApp() {
-        List<PizzaMaker> pizzas = serviceLoader.stream().map(ServiceLoader.Provider::get).toList();
-
+        List<ServiceLoader.Provider<PizzaMaker>> pizzas = serviceLoader.stream().toList();
 
         while (true) {
-            int userChoice = getPizzaChoice();
+            int userChoice = getPizzaChoice(pizzas);
             if (userChoice == 0) {
                 break;
             }
-            PizzaMaker pizzaMaker = pizzas.get(userChoice - 1);
+            ServiceLoader.Provider<PizzaMaker> pizzaMaker = pizzas.get(userChoice - 1);
             printPizzas(pizzaMaker);
         }
     }
@@ -35,8 +34,8 @@ public class Main {
         System.out.println(text);
     }
 
-    private void printPizzas(PizzaMaker pizzas) {
-        printToConsole(pizzas.pizzaOrder());
+    private void printPizzas(ServiceLoader.Provider<PizzaMaker> pizzas) {
+        System.out.println(pizzas.get().pizzaOrder());
     }
 
     private String input() {
@@ -47,15 +46,16 @@ public class Main {
         return Integer.parseInt(input());
     }
 
-    private int getPizzaChoice() {
-        for (PizzaMaker pizza : serviceLoader) {
-            var pizzatype = pizza.getClass().getAnnotation(PizzaType.class);
+    private int getPizzaChoice(List<ServiceLoader.Provider<PizzaMaker>> pizzas) {
+
+        for (ServiceLoader.Provider<PizzaMaker> p : pizzas) {
+            var pizzatype = p.type().getAnnotation(PizzaType.class);
             if (pizzatype == null)
                 printToConsole("No annotations of PizzaType found");
             else
                 printToConsole(pizzatype.value());
         }
-        printToConsole("Exit = 0\nEnter number of the pizza you want: \n");
+        printToConsole("0. Exit\nEnter number of the pizza you want: \n");
 
         return parseChoiceToInt();
     }
