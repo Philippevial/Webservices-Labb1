@@ -1,6 +1,7 @@
 package org.example.consumer;
 
 import org.example.pizzaservice.PizzaMaker;
+import org.example.pizzaservice.PizzaType;
 
 import java.util.List;
 import java.util.Scanner;
@@ -9,7 +10,7 @@ import java.util.ServiceLoader;
 public class Main {
     private final Scanner scanner = new Scanner(System.in);
     private final ServiceLoader<PizzaMaker> serviceLoader = ServiceLoader.load(PizzaMaker.class);
-    private boolean loop = true;
+
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -19,10 +20,12 @@ public class Main {
     private void runApp() {
         List<PizzaMaker> pizzas = serviceLoader.stream().map(ServiceLoader.Provider::get).toList();
 
-        while(loop) {
+
+        while (true) {
             int userChoice = getPizzaChoice();
-            if(userChoice == 0)
-                loop = false;
+            if (userChoice == 0) {
+                break;
+            }
             PizzaMaker pizzaMaker = pizzas.get(userChoice - 1);
             printPizzas(pizzaMaker);
         }
@@ -45,8 +48,15 @@ public class Main {
     }
 
     private int getPizzaChoice() {
-        printToConsole("\nMENY:\nKebabpizza(1) \nHawaiiPizza (2) \nExit(0)");
+        for (PizzaMaker pizza : serviceLoader) {
+            var pizzatype = pizza.getClass().getAnnotation(PizzaType.class);
+            if (pizzatype == null)
+                printToConsole("No annotations of PizzaType found");
+            else
+                printToConsole(pizzatype.value());
+        }
+        printToConsole("Exit = 0\nEnter number of the pizza you want: \n");
+
         return parseChoiceToInt();
     }
-
 }
