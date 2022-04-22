@@ -2,45 +2,51 @@ package org.example.consumer;
 
 import org.example.pizzaservice.PizzaMaker;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.ServiceLoader;
 
 public class Main {
-    static Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
+    private final ServiceLoader<PizzaMaker> serviceLoader = ServiceLoader.load(PizzaMaker.class);
+    private boolean loop = true;
 
     public static void main(String[] args) {
+        Main main = new Main();
+        main.runApp();
+    }
 
+    private void runApp() {
+        List<PizzaMaker> pizzas = serviceLoader.stream().map(ServiceLoader.Provider::get).toList();
 
-        ServiceLoader<PizzaMaker> pizzaLoader = ServiceLoader.load(PizzaMaker.class);
-
-        Scanner scanner = new Scanner(System.in);
-
-        while(true) {
-            System.out.println("\nKebabpizza(1) \nHawaiiPizza (2) \nExit(0)");
-            String input = scanner.nextLine();
-
-            var kebabpizza = pizzaLoader.stream()
-                    .filter(pizzaMakerProvider -> pizzaMakerProvider.type().getSimpleName().startsWith("Kebab"))
-                    .map(ServiceLoader.Provider::get)
-                    .toList();
-
-            var hawaiipizza = pizzaLoader.stream()
-                    .filter(pizzaMakerProvider -> pizzaMakerProvider.type().getSimpleName().startsWith("Hawaii"))
-                    .map(ServiceLoader.Provider::get)
-                    .toList();
-
-            if (input.equals("1"))
-                for (PizzaMaker pizzaMaker : kebabpizza)
-                    System.out.println(pizzaMaker.pizzaOrder());
-
-            if (input.equals("2"))
-                for (PizzaMaker pizzaMaker : hawaiipizza)
-                    System.out.println(pizzaMaker.pizzaOrder());
-
-            if(input.equals("0")) {
-                System.out.println("Goodbye");
-                break;
-            }
+        while(loop) {
+            int userChoice = getPizzaChoice();
+            if(userChoice == 0)
+                loop = false;
+            PizzaMaker pizzaMaker = pizzas.get(userChoice - 1);
+            printPizzas(pizzaMaker);
         }
     }
+
+    private void printToConsole(String text) {
+        System.out.println(text);
+    }
+
+    private void printPizzas(PizzaMaker pizzas) {
+        printToConsole(pizzas.pizzaOrder());
+    }
+
+    private String input() {
+        return scanner.nextLine();
+    }
+
+    private int parseChoiceToInt() {
+        return Integer.parseInt(input());
+    }
+
+    private int getPizzaChoice() {
+        printToConsole("\nMENY:\nKebabpizza(1) \nHawaiiPizza (2) \nExit(0)");
+        return parseChoiceToInt();
+    }
+
 }
